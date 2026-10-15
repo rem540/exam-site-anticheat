@@ -1,0 +1,18 @@
+# 本地 Agent 工作目录与记忆文件
+.workbuddy/
+
+# 平台生成的应用标记文件
+*.genie
+
+# 你自己的真实名单（不要提交）
+roster.txt
+real-*/
+
+# 常见噪声
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+*.tmp
+__pycache__/
+node_modules/

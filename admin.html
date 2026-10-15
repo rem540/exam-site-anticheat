@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>在线限时答题系统 · 评卷后台（演示版）</title>
+<style>
+:root{--ink:#1b2434;--ink-2:#42506b;--ink-3:#7b879e;--line:#dfe5ee;--line-2:#eef2f8;
+--brand:#1f5fbf;--brand-soft:#eaf1fd;--danger:#c0392b;--ok:#1f8a53;--warn:#b8860b;--bg:#f2f5f9;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;}
+header{background:#fff;border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:50;}
+header .dot{width:9px;height:9px;border-radius:50%;background:var(--brand);}
+header h1{margin:0;font-size:16px;font-weight:700;}
+header .sub{color:var(--ink-3);font-size:12.5px;}
+header .spacer{flex:1;}
+.btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink-2);padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;}
+.btn:hover{border-color:#c6d2e4;background:#f7f9fc;}
+.btn-primary{background:var(--brand);border-color:var(--brand);color:#fff;}
+.btn-primary:hover{background:#1a52a6;}
+.btn-danger{color:var(--danger);}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+main{max-width:1180px;margin:0 auto;padding:24px 18px 80px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;box-shadow:0 6px 24px rgba(28,48,86,.06);}
+#login{max-width:430px;margin:60px auto;}
+#login h2{margin:0 0 6px;font-size:17px;}
+#login p{margin:0 0 18px;color:var(--ink-3);font-size:12.5px;}
+#login input{width:100%;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:11px 13px;outline:none;}
+#login input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(31,95,191,.12);}
+#login button{width:100%;margin-top:14px;padding:12px;}
+.err{color:var(--danger);font-size:12.5px;font-weight:600;min-height:18px;margin-top:10px;}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+.stat{flex:1;min-width:130px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+.stat b{display:block;font-size:24px;font-weight:800;color:var(--brand);line-height:1.3;}
+.stat span{font-size:12.5px;color:var(--ink-3);}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.bar input{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:7px 11px;outline:none;width:150px;}
+#inpOpen,#inpClose{width:198px;}
+.bar label.hint{display:inline-flex;align-items:center;gap:6px;}
+.card h2.win-title{margin:0 0 4px;font-size:15px;font-weight:700;}
+.bar .spacer{flex:1;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{border-bottom:1px solid var(--line-2);padding:9px 8px;text-align:left;vertical-align:middle;}
+th{background:#f7faff;color:var(--ink-3);font-weight:600;font-size:12.5px;position:sticky;top:57px;}
+tr.row{cursor:pointer;}
+tr.row:hover{background:#fafcff;}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;border-radius:5px;padding:1px 8px;white-space:nowrap;}
+.t-done{background:#e9f7ef;color:var(--ok);}
+.t-live{background:#fff8e6;color:var(--warn);}
+.t-none{background:#f2f5f9;color:var(--ink-3);}
+.t-auto{background:#fdecea;color:var(--danger);}
+.mask{position:fixed;inset:0;background:rgba(20,30,48,.5);z-index:900;display:none;align-items:flex-start;justify-content:center;padding:28px 16px;overflow:auto;}
+.mask.show{display:flex;}
+.modal{background:#fff;border-radius:14px;max-width:940px;width:100%;padding:26px 28px;box-shadow:0 24px 60px rgba(20,35,60,.28);}
+.modal h3{margin:0 0 4px;font-size:17px;}
+.modal .meta{color:var(--ink-3);font-size:12.5px;margin-bottom:14px;}
+.sec{margin-top:18px;border-top:1px solid var(--line-2);padding-top:14px;}
+.sec h4{margin:0 0 8px;font-size:13.5px;color:var(--brand);}
+.qa{display:flex;gap:10px;padding:7px 10px;border-radius:8px;font-size:13px;}
+.qa:nth-child(odd){background:#fafcff;}
+.qa .k{flex:none;width:96px;color:var(--ink-3);font-weight:600;font-size:12.5px;padding-top:1px;}
+.qa .v{flex:1;white-space:pre-wrap;word-break:break-word;color:var(--ink);}
+.qa .v.empty{color:#b9c0cd;font-style:italic;}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;margin:10px 0 14px;}
+.gitem{background:#fafcff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;}
+.gitem label{display:block;font-size:12px;color:var(--ink-3);font-weight:600;margin-bottom:4px;}
+.gitem .row2{display:flex;align-items:center;gap:6px;}
+.gitem input{width:100%;font:inherit;font-size:14px;font-weight:700;color:var(--brand);border:1px solid var(--line);border-radius:7px;padding:5px 8px;outline:none;text-align:center;}
+.gitem input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(31,95,191,.12);}
+.gitem .mx{font-size:12px;color:var(--ink-3);}
+.total{font-size:15px;font-weight:800;color:var(--brand);}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center;}
+.hint{font-size:12px;color:var(--ink-3);}
+.note{background:#fbfcfe;border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:8px;padding:11px 14px;font-size:12.5px;color:var(--ink-2);margin:10px 0;}
+.note.warn{background:#fffdf6;border-color:#f0dcb8;border-left-color:var(--warn);}
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(20px);background:#1b2434;color:#fff;font-size:13px;padding:11px 20px;border-radius:10px;opacity:0;pointer-events:none;transition:.28s;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@media print{.mask,header,.bar,main>.card{display:none!important;}}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="dot"></span>
+  <h1>在线限时答题系统 · 评卷后台（演示版）</h1>
+  <span class="sub">开源演示版 · 仅供评卷人使用</span>
+  <span class="spacer"></span>
+  <button class="btn" id="btnLogout" style="display:none">退出</button>
+</header>
+
+<main>
+  <div class="card" id="login">
+    <h2>评卷后台登录</h2>
+    <p>请输入评卷口令进入（口令由系统管理员提供）。</p>
+    <input type="password" id="inpToken" placeholder="评卷口令" autocomplete="off">
+    <button class="btn btn-primary" id="btnLogin">进入后台</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+
+  <div id="panel" style="display:none">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="win-title">限定入场时间</h2>
+      <p class="hint" style="margin:0 0 12px">只有在这个时间窗内，考生才能点「开始答题」；不在此窗口内进入答题页，开始按钮会被禁用并提示原因。<b>已经开考的人不受截止时间影响</b>，仍可继续作答并交卷。两项都留空表示不限入场时间。</p>
+      <div class="bar">
+        <label class="hint">开放 <input type="datetime-local" id="inpOpen"></label>
+        <label class="hint">截止 <input type="datetime-local" id="inpClose"></label>
+        <button class="btn btn-primary" id="btnSaveWindow">保存入场时间</button>
+        <button class="btn" id="btnClearWindow">清除（不限时）</button>
+        <span class="spacer"></span>
+        <span class="hint" id="winState">—</span>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="card">
+      <div class="bar">
+        <button class="btn" id="btnRefresh">刷新数据</button>
+        <button class="btn" id="btnCsv">导出汇总 CSV（全站）</button>
+        <button class="btn btn-danger" id="btnResetAll">全部重置（释放所有身份·测试用）</button>
+        <span class="spacer"></span>
+        <input id="inpReviewer" placeholder="评卷人姓名">
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:52px">#</th>
+            <th>姓名</th>
+            <th>班级</th>
+            <th style="width:88px">状态</th>
+            <th style="width:78px">用时</th>
+            <th style="width:120px">开始时间</th>
+            <th style="width:120px">交卷时间</th>
+            <th style="width:72px">总分</th>
+            <th style="width:130px">作弊信号</th>
+            <th style="width:132px">操作</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="note" id="emptyNote" style="display:none">暂无任何答题记录。</div>
+    </div>
+    <p class="hint" style="margin-top:12px">点击任意一行可查看该考生答卷并打分。<b>每个身份只能作答一次</b>；若要让某位考生重考，点该行的「重置」释放其身份（答卷记录会保留并标记为已重置），也可用上方「全部重置」一次性释放所有身份。</p>
+  </div>
+</main>
+
+<div class="mask" id="detailMask">
+  <div class="modal" id="detailBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
+<script>
+(function(){
+'use strict';
+
+var CLOUD = {
+  endpoint: 'https://YOUR-ENDPOINT.example.com',
+  publishableKey: 'wbpk_YOUR_APP_ID_YOUR_PUBLISHABLE_KEY',
+  oauthRelayBaseUrl: 'https://YOUR-OAUTH-RELAY-URL'
+};
+var ROSTER = [{"c": "示例1班", "n": "测试01"}, {"c": "示例1班", "n": "测试02"}, {"c": "示例1班", "n": "测试03"}, {"c": "示例1班", "n": "测试04"}, {"c": "示例1班", "n": "测试05"}, {"c": "示例1班", "n": "测试06"}, {"c": "示例1班", "n": "测试07"}, {"c": "示例1班", "n": "测试08"}, {"c": "示例1班", "n": "测试09"}, {"c": "示例1班", "n": "测试10"}, {"c": "示例1班", "n": "测试11"}, {"c": "示例2班", "n": "测试12"}, {"c": "示例2班", "n": "测试13"}, {"c": "示例2班", "n": "测试14"}, {"c": "示例2班", "n": "测试15"}, {"c": "示例2班", "n": "测试16"}, {"c": "示例2班", "n": "测试17"}, {"c": "示例2班", "n": "测试18"}, {"c": "示例2班", "n": "测试19"}, {"c": "示例2班", "n": "测试20"}, {"c": "示例2班", "n": "测试21"}, {"c": "示例3班", "n": "测试22"}, {"c": "示例3班", "n": "测试23"}, {"c": "示例3班", "n": "测试24"}, {"c": "示例3班", "n": "测试25"}, {"c": "示例3班", "n": "测试26"}, {"c": "示例3班", "n": "测试27"}, {"c": "示例3班", "n": "测试28"}, {"c": "示例3班", "n": "测试29"}, {"c": "示例3班", "n": "测试30"}, {"c": "示例3班", "n": "测试31"}, {"c": "示例4班", "n": "测试32"}, {"c": "示例4班", "n": "测试33"}, {"c": "示例4班", "n": "测试34"}, {"c": "示例4班", "n": "测试35"}, {"c": "示例4班", "n": "测试36"}, {"c": "示例4班", "n": "测试37"}, {"c": "示例4班", "n": "测试38"}, {"c": "示例4班", "n": "测试39"}, {"c": "示例4班", "n": "测试40"}, {"c": "示例4班", "n": "测试41"}, {"c": "示例5班", "n": "测试42"}, {"c": "示例5班", "n": "测试43"}, {"c": "示例5班", "n": "测试44"}, {"c": "示例5班", "n": "测试45"}, {"c": "示例5班", "n": "测试46"}, {"c": "示例5班", "n": "测试47"}, {"c": "示例5班", "n": "测试48"}, {"c": "示例5班", "n": "测试49"}, {"c": "示例5班", "n": "测试50"}, {"c": "示例5班", "n": "测试51"}];
+var MAXES = [5,6,10,5,15,5,15,20,20];
+var TOKEN_KEY = 'wl_admin_token';
+
+var cloud = null;
+function initCloud(){
+  if (cloud) return cloud;
+  if (typeof WorkBuddyCloud === 'undefined' || !WorkBuddyCloud.createWorkBuddyCloud){
+    throw new Error('云端 SDK 未能加载，请检查网络后刷新页面');
+  }
+  cloud = WorkBuddyCloud.createWorkBuddyCloud({
+    endpoint: CLOUD.endpoint,
+    publishableKey: CLOUD.publishableKey,
+    oauthRelayBaseUrl: CLOUD.oauthRelayBaseUrl
+  });
+  return cloud;
+}
+function rpc(name, params){
+  try { return initCloud().database.rpc(name, params || {}); }
+  catch(e){ return Promise.reject(e); }
+}
+function scalar(res){
+  if (!res || res.error){
+    var e = res && res.error;
+    var msg = (e && (e.message || e.details)) || '网络异常';
+    throw new Error(msg);
+  }
+  var d = res.data;
+  if (Array.isArray(d)) return d.length ? d[0] : null;
+  return d;
+}
+/* admin_list 返回的是数组，不能走 scalar（会被截断成第一条） */
+function listOf(res){
+  if (!res || res.error){
+    var e = res && res.error;
+    var msg = (e && (e.message || e.details)) || '网络异常';
+    if (msg.indexOf('unauthorized') >= 0) throw new Error('口令不正确');
+    throw new Error(msg);
+  }
+  return Array.isArray(res.data) ? res.data : [];
+}
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(m){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+  });
+}
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtDur(sec){
+  if (sec == null || sec === '') return '—';
+  var s = Number(sec); if (isNaN(s)) return '—';
+  return pad(Math.floor(s/60)) + ':' + pad(s%60);
+}
+function parseTs(v){
+  if (v == null) return NaN;
+  if (typeof v === 'number') return v;
+  var s = String(v).trim();
+  var t = Date.parse(s.replace(/(\.\d{3})\d+/, '$1'));
+  if (!isNaN(t)) return t;
+  t = Date.parse(s.replace(' ', 'T').replace(/(\.\d{3})\d+/, '$1'));
+  return isNaN(t) ? Date.parse(s) : t;
+}
+function fmtDT(v){
+  if (!v) return '—';
+  var t = parseTs(v); if (isNaN(t)) return String(v);
+  var d = new Date(t);
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+}
+var toastEl = document.getElementById('toast'), toastTimer = null;
+function toast(m, ms){
+  toastEl.textContent = m; toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, ms || 2400);
+}
+
+/* ============================ 登录 ============================ */
+var token = '';
+try { token = sessionStorage.getItem(TOKEN_KEY) || ''; } catch(e){}
+
+document.getElementById('btnLogin').addEventListener('click', function(){
+  var v = document.getElementById('inpToken').value.trim();
+  if (!v){ document.getElementById('loginErr').textContent = '请输入口令'; return; }
+  var btn = this; btn.disabled = true; btn.textContent = '校验中…';
+  rpc('admin_list', { p_token: v }).then(function(res){
+    var data = listOf(res);
+    try { sessionStorage.setItem(TOKEN_KEY, v); } catch(e){}
+    token = v;
+    showPanel(data);
+  }).catch(function(e){
+    document.getElementById('loginErr').textContent = '口令不正确，或网络异常（' + e.message + '）';
+  }).then(function(){
+    btn.disabled = false; btn.textContent = '进入后台';
+  });
+});
+document.getElementById('inpToken').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') document.getElementById('btnLogin').click();
+});
+document.getElementById('btnLogout').addEventListener('click', function(){
+  try { sessionStorage.removeItem(TOKEN_KEY); } catch(e){}
+  location.reload();
+});
+
+/* ============================ 列表 ============================ */
+var SUBMISSIONS = [];
+function showPanel(list){
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('panel').style.display = 'block';
+  document.getElementById('btnLogout').style.display = 'inline-block';
+  document.getElementById('inpReviewer').value =
+    (function(){ try { return localStorage.getItem('wl_reviewer') || ''; } catch(e){ return ''; } })();
+  render(list);
+  refreshWindow(true);
+}
+document.getElementById('inpReviewer').addEventListener('input', function(){
+  try { localStorage.setItem('wl_reviewer', this.value); } catch(e){}
+});
+document.getElementById('btnRefresh').addEventListener('click', refresh);
+document.getElementById('btnCsv').addEventListener('click', exportAllCsv);
+
+function refresh(){
+  return rpc('admin_list', { p_token: token }).then(function(res){
+    render(listOf(res));
+    toast('已刷新');
+  }).catch(function(e){ toast('刷新失败：' + e.message, 4000); });
+}
+
+function render(list){
+  SUBMISSIONS = list.slice().sort(function(a,b){
+    var x = a.student_class + a.student_name, y = b.student_class + b.student_name;
+    return x < y ? -1 : x > y ? 1 : 0;
+  });
+  var active = SUBMISSIONS.filter(function(r){ return !r.released_at; });
+  var released = SUBMISSIONS.length - active.length;
+  var done = 0, live = 0, autoN = 0, graded = 0;
+  active.forEach(function(r){
+    if (r.submitted_at) done++; else live++;
+    if (r.submit_type === 'timeout') autoN++;
+    if (r.total_score != null) graded++;
+  });
+  document.getElementById('stats').innerHTML =
+    '<div class="stat"><b>'+active.length+'</b><span>已进入答题（共 '+ROSTER.length+' 人）</span></div>'+
+    '<div class="stat"><b>'+done+'</b><span>已交卷</span></div>'+
+    '<div class="stat"><b>'+live+'</b><span>答题中 / 未交卷</span></div>'+
+    '<div class="stat"><b>'+autoN+'</b><span>时间到自动交卷</span></div>'+
+    '<div class="stat"><b>'+graded+'</b><span>已评分</span></div>'+
+    '<div class="stat"><b>'+released+'</b><span>已重置（可再次选择）</span></div>';
+
+  var tb = document.getElementById('rows');
+  tb.innerHTML = '';
+  document.getElementById('emptyNote').style.display = SUBMISSIONS.length ? 'none' : 'block';
+
+  SUBMISSIONS.forEach(function(r, i){
+    var tr = document.createElement('tr');
+    tr.className = 'row';
+    var st = r.submitted_at
+      ? (r.submit_type === 'timeout' ? '<span class="tag t-auto">超时交卷</span>' : '<span class="tag t-done">已交卷</span>')
+      : '<span class="tag t-live">答题中</span>';
+    if (r.released_at) st += ' <span class="tag t-none">已重置</span>';
+    var v = (r.answers && r.answers._meta && r.answers._meta.violations) || {};
+    var sig = [];
+    if (v.devtools) sig.push('调试器×'+v.devtools);
+    if (v.blur) sig.push('切屏×'+v.blur);
+    if (v.paste) sig.push('粘贴×'+v.paste);
+    if (v.copy) sig.push('复制×'+v.copy);
+    if (v.ctx) sig.push('右键×'+v.ctx);
+    if (v.key) sig.push('快捷键×'+v.key);
+    tr.innerHTML =
+      '<td>'+(i+1)+'</td>'+
+      '<td><b>'+esc(r.student_name)+'</b></td>'+
+      '<td>'+esc(r.student_class)+'</td>'+
+      '<td>'+st+'</td>'+
+      '<td>'+fmtDur(r.elapsed_sec)+'</td>'+
+      '<td>'+fmtDT(r.started_at)+'</td>'+
+      '<td>'+fmtDT(r.submitted_at)+'</td>'+
+      '<td>'+(r.total_score == null ? '—' : '<b>'+r.total_score+'</b>')+'</td>'+
+      '<td style="font-size:11.5px;color:var(--danger)">'+esc(sig.join('、'))+'</td>'+
+      '<td style="white-space:nowrap">'+
+        '<button class="btn" data-act="view" style="padding:3px 9px;font-size:12px">查看</button>'+
+        (r.released_at
+          ? '<button class="btn" style="padding:3px 9px;font-size:12px;margin-left:5px" disabled>已重置</button>'
+          : '<button class="btn" data-act="reset" style="padding:3px 9px;font-size:12px;margin-left:5px">重置</button>')+
+      '</td>';
+    tr.addEventListener('click', function(){ openDetail(r); });
+    tr.querySelector('[data-act="view"]').addEventListener('click', function(e){
+      e.stopPropagation(); openDetail(r);
+    });
+    var rb = tr.querySelector('[data-act="reset"]');
+    if (rb) rb.addEventListener('click', function(e){
+      e.stopPropagation(); resetRecord(r, rb);
+    });
+    tb.appendChild(tr);
+  });
+}
+
+/* ---------- 重置身份：释放后该身份可再次被选择 ---------- */
+function resetRecord(r, btn){
+  if (!r || r.released_at) return;
+  if (!btn.dataset.armed){
+    var old = btn.textContent;
+    btn.dataset.armed = '1';
+    btn.textContent = '确认重置';
+    setTimeout(function(){ if (btn){ delete btn.dataset.armed; btn.textContent = old; } }, 4000);
+    return;
+  }
+  delete btn.dataset.armed;
+  btn.disabled = true; btn.textContent = '重置中…';
+  rpc('admin_reset', { p_token: token, p_id: r.id })
+    .then(function(res){
+      scalar(res);
+      toast('已重置「' + r.student_name + '」，该身份可以再次选择');
+      closeDetail();
+      return refresh();
+    })
+    .catch(function(e){
+      toast('重置失败：' + e.message, 4000);
+      btn.disabled = false; btn.textContent = '重置';
+    });
+}
+
+/* ---------- 全部重置：一次性释放所有身份（测试用） ---------- */
+var resetAllArmed = false, resetAllTimer = null;
+function resetAllLabel(){ return '全部重置（释放所有身份·测试用）'; }
+document.getElementById('btnResetAll').addEventListener('click', function(){
+  var btn = this;
+  if (!resetAllArmed){
+    resetAllArmed = true;
+    btn.textContent = '再点一次确认全部重置';
+    toast('将释放全部身份，考生可重新选择；已交答卷会保留并标记为已重置', 5200);
+    clearTimeout(resetAllTimer);
+    resetAllTimer = setTimeout(function(){
+      resetAllArmed = false; btn.textContent = resetAllLabel();
+    }, 5000);
+    return;
+  }
+  clearTimeout(resetAllTimer);
+  resetAllArmed = false;
+  btn.disabled = true; btn.textContent = '重置中…';
+  rpc('admin_reset_all', { p_token: token })
+    .then(function(res){
+      var d = scalar(res) || {};
+      toast('已释放 ' + (d.released == null ? 0 : d.released) + ' 个身份，考生可重新选择');
+      return refresh();
+    })
+    .catch(function(e){ toast('重置失败：' + e.message, 4000); })
+    .then(function(){ btn.disabled = false; btn.textContent = resetAllLabel(); });
+});
+
+/* ---------- 限定入场时间 ---------- */
+function toLocalInput(v){
+  var t = parseTs(v);
+  if (isNaN(t)) return '';
+  var d = new Date(t);
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+}
+function winLabel(e){
+  if (!e || !e.set) return '当前：未设置（不限入场时间）';
+  if (e.state === 'before') return '当前：等待开放（' + fmtDT(e.open_at) + ' 开放）';
+  if (e.state === 'open')   return '当前：入场进行中' + (e.close_at ? '（' + fmtDT(e.close_at) + ' 截止）' : '（未设截止）');
+  return '当前：入场已截止';
+}
+function refreshWindow(fill){
+  return rpc('exam_entrance').then(function(res){
+    var e = scalar(res) || {};
+    if (fill !== false){
+      document.getElementById('inpOpen').value  = toLocalInput(e.open_at);
+      document.getElementById('inpClose').value = toLocalInput(e.close_at);
+    }
+    var el = document.getElementById('winState');
+    el.textContent = winLabel(e);
+    el.style.color = !e.set ? 'var(--ink-3)' : (e.state === 'open' ? 'var(--ok)' : e.state === 'closed' ? 'var(--danger)' : 'var(--warn)');
+  }).catch(function(e){ toast('读取入场时间失败：' + e.message, 4000); });
+}
+document.getElementById('btnSaveWindow').addEventListener('click', function(){
+  var btn = this;
+  var o = document.getElementById('inpOpen').value;
+  var c = document.getElementById('inpClose').value;
+  if (o && c && new Date(o).getTime() >= new Date(c).getTime()){
+    toast('「开放」时间必须早于「截止」时间', 4200);
+    return;
+  }
+  btn.disabled = true; btn.textContent = '保存中…';
+  rpc('admin_set_entrance', {
+    p_token: token,
+    p_open:  o ? new Date(o).toISOString() : null,
+    p_close: c ? new Date(c).toISOString() : null
+  }).then(function(res){
+    scalar(res);
+    toast((o || c) ? '入场时间已保存' : '已清除，恢复为不限入场时间');
+    return refreshWindow(true);
+  }).catch(function(e){
+    toast('保存失败：' + e.message, 4000);
+  }).then(function(){
+    btn.disabled = false; btn.textContent = '保存入场时间';
+  });
+});
+document.getElementById('btnClearWindow').addEventListener('click', function(){
+  document.getElementById('inpOpen').value = '';
+  document.getElementById('inpClose').value = '';
+  document.getElementById('btnSaveWindow').click();
+});
+
+/* ============================ 详情 / 评分 ============================ */
+var QUESTIONS = [
+  { no:1, max:5,  keys:[['q1a','1 还原页面'],['q1b','2 接口与库表'],['q1c','3 线上运维'],['q1d','4 用例与缺陷'],['q1e','5 需求与优先级']] },
+  { no:2, max:6,  keys:[['q2a','1 判断'],['q2a_r','1 理由'],['q2b','2 判断'],['q2b_r','2 理由'],['q2c','3 判断'],['q2c_r','3 理由'],['q2d','4 判断'],['q2d_r','4 理由'],['q2e','5 判断'],['q2e_r','5 理由'],['q2f','6 判断'],['q2f_r','6 理由']] },
+  { no:3, max:10, keys:[['q3_order','步骤排序'],['q3_reason','排序理由']] },
+  { no:4, max:5,  keys:[['q4_num','括号内数字'],['q4_rule','规律说明']] },
+  { no:5, max:15, keys:[['q5_num','最终瓶数'],['q5_steps','计算步骤']] },
+  { no:6, max:5,  keys:'cmds' },
+  { no:7, max:15, keys:[['q7','开放设想']] },
+  { no:8, max:20, keys:[['q8_r1','第一轮结果'],['q8_r2','第二轮结果'],['q8_mod','改为降序'],['q8_why','已有序是否交换']] },
+  { no:9, max:20, keys:[['q9_1','(1) 开发思路'],['q9_2','(2) 提示词原则'],['q9_3','(3) 报名模块提示词']] }
+];
+var JUDGE_LABEL = { yes:'✔ 对', no:'✘ 错', '':'(未选)' };
+var current = null;
+
+function openDetail(r){
+  current = r;
+  var a = r.answers || {};
+  var meta = a._meta || {};
+  var v = meta.violations || {};
+  var sig = Object.keys(v).filter(function(k){ return v[k]; })
+                     .map(function(k){ return k + '×' + v[k]; }).join('、') || '无';
+
+  var html = '';
+  html += '<h3>'+esc(r.student_name)+'　<span style="font-size:13px;color:var(--ink-3);font-weight:400">'+esc(r.student_class)+'</span></h3>';
+  html += '<div class="meta">开始：'+fmtDT(r.started_at)+'　|　交卷：'+fmtDT(r.submitted_at)+'　|　用时：'+fmtDur(r.elapsed_sec)+
+          '　|　方式：'+(r.submit_type === 'timeout' ? '时间到自动交卷' : r.submit_type === 'manual' ? '手动交卷' : '尚未交卷')+'</div>';
+  if (r.released_at){
+    html += '<div class="note warn"><b>该身份已被重置</b>（'+fmtDT(r.released_at)+'）：考生可以用同一身份重新开始一次答题，本记录保留在列表中并标记为「已重置」。</div>';
+  }
+  html += '<div class="note'+(sig === '无' ? '' : ' warn')+'"><b>作弊信号统计：</b>'+esc(sig)+'（切屏/调试器等操作次数，仅作参考）</div>';
+
+  QUESTIONS.forEach(function(q, qi){
+    html += '<div class="sec"><h4>第 '+q.no+' 题　（满分 '+q.max+' 分）</h4>';
+    if (q.keys === 'cmds'){
+      var lines = [];
+      for (var n=1; n<=12; n++){
+        var c = a['q6_cmd'+n], d = a['q6_desc'+n];
+        if ((c && String(c).trim()) || (d && String(d).trim())){
+          lines.push('<div class="qa"><span class="k">第 '+n+' 条</span><span class="v">'+esc(c||'—')+'　→　'+esc(d||'—')+'</span></div>');
+        }
+      }
+      html += lines.length ? lines.join('') : '<div class="qa"><span class="k">—</span><span class="v empty">（未作答）</span></div>';
+    } else {
+      q.keys.forEach(function(kv){
+        var raw = a[kv[0]];
+        var val = String(raw == null ? '' : raw);
+        if (kv[0].indexOf('q2') === 0 && kv[0].slice(-2) !== '_r'){
+          val = JUDGE_LABEL[val] || '(未选)';
+        }
+        html += '<div class="qa"><span class="k">'+esc(kv[1])+'</span><span class="v'+(val ? '' : ' empty')+'">'+esc(val || '（未作答）')+'</span></div>';
+      });
+    }
+    html += '</div>';
+  });
+
+  var sc = r.scores || {};
+  html += '<div class="sec"><h4>评分</h4><div class="grade" id="gradeBox">';
+  for (var i=0;i<9;i++){
+    var val = sc['q'+(i+1)];
+    html += '<div class="gitem"><label>第 '+(i+1)+' 题</label><div class="row2">'+
+            '<input type="number" min="0" max="'+MAXES[i]+'" step="0.5" data-g="'+(i+1)+'" value="'+(val==null?'':val)+'">'+
+            '<span class="mx">/ '+MAXES[i]+'</span></div></div>';
+  }
+  html += '</div><div>总分：<span class="total" id="totalBox">'+(r.total_score == null ? '—' : r.total_score)+'</span> / 101　'+
+          '<span class="hint">（评分人：'+esc(r.reviewer || document.getElementById('inpReviewer').value || '未填写')+'）</span></div>';
+  html += '<div class="acts">'+
+          '<button class="btn btn-primary" id="btnSaveScore">保存评分</button>'+
+          '<button class="btn" id="btnCopyCsv">复制本卷 CSV</button>'+
+          '<button class="btn" id="btnCloseDetail">关闭</button>'+
+          '<span class="spacer" style="flex:1"></span>'+
+          (r.released_at ? '' : '<button class="btn" id="btnResetOne">重置身份（可再次答题）</button>')+
+          '<button class="btn btn-danger" id="btnDelete">删除此记录</button>'+
+          '</div></div>';
+
+  document.getElementById('detailBody').innerHTML = html;
+  document.getElementById('detailMask').classList.add('show');
+  window.scrollTo(0,0);
+
+  document.getElementById('gradeBox').addEventListener('input', function(){
+    var t = 0, any = false;
+    this.querySelectorAll('input[data-g]').forEach(function(inp){
+      var val = inp.value === '' ? null : Number(inp.value);
+      if (val != null && !isNaN(val)){ t += val; any = true; }
+    });
+    document.getElementById('totalBox').textContent = any ? t : '—';
+  });
+  document.getElementById('btnCloseDetail').addEventListener('click', closeDetail);
+  document.getElementById('btnSaveScore').addEventListener('click', saveScore);
+  document.getElementById('btnCopyCsv').addEventListener('click', function(){ copyCsv([r]); });
+  var rOne = document.getElementById('btnResetOne');
+  if (rOne) rOne.addEventListener('click', function(){ resetRecord(r, rOne); });
+  document.getElementById('btnDelete').addEventListener('click', doDelete);
+}
+function closeDetail(){ document.getElementById('detailMask').classList.remove('show'); current = null; }
+document.getElementById('detailMask').addEventListener('click', function(e){
+  if (e.target === this) closeDetail();
+});
+
+function collectScores(){
+  var sc = {}, t = 0;
+  document.querySelectorAll('#gradeBox input[data-g]').forEach(function(inp){
+    var v = inp.value === '' ? null : Number(inp.value);
+    if (v == null || isNaN(v)) return;
+    sc['q' + inp.dataset.g] = v;
+    t += v;
+  });
+  return { scores: sc, total: t };
+}
+function saveScore(){
+  if (!current) return;
+  var r = collectScores();
+  var reviewer = document.getElementById('inpReviewer').value.trim() || null;
+  var btn = document.getElementById('btnSaveScore');
+  btn.disabled = true; btn.textContent = '保存中…';
+  rpc('admin_save_score', { p_token: token, p_id: current.id, p_scores: r.scores, p_total: r.total, p_reviewer: reviewer })
+    .then(function(res){ scalar(res); toast('评分已保存'); closeDetail(); return refresh(); })
+    .catch(function(e){ toast('保存失败：' + e.message, 4000); })
+    .then(function(){ btn.disabled = false; btn.textContent = '保存评分'; });
+}
+function doDelete(){
+  if (!current) return;
+  var btn = document.getElementById('btnDelete');
+  if (!btn.dataset.armed){
+    btn.dataset.armed = '1';
+    btn.textContent = '再点一次确认删除';
+    setTimeout(function(){ if (btn) { delete btn.dataset.armed; btn.textContent = '删除此记录'; } }, 4000);
+    return;
+  }
+  var id = current.id;
+  btn.disabled = true; btn.textContent = '删除中…';
+  rpc('admin_delete', { p_token: token, p_id: id })
+    .then(function(res){ scalar(res); toast('已删除'); closeDetail(); return refresh(); })
+    .catch(function(e){ toast('删除失败：' + e.message, 4000); btn.disabled = false; btn.textContent = '删除此记录'; });
+}
+
+/* ============================ CSV ============================ */
+function csvCell(v){
+  var s = v == null ? '' : String(v);
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+function rowsToCsv(list){
+  var head = ['姓名','班级','状态','交卷方式','用时(分:秒)','开始时间','交卷时间'];
+  for (var i=1;i<=9;i++) head.push('第'+i+'题得分');
+  head.push('总分','评卷人','作弊信号');
+  for (var j=1;j<=9;j++) head.push('第'+j+'题答案');
+  var out = [head.map(csvCell).join(',')];
+  list.forEach(function(r){
+    var a = r.answers || {};
+    var sc = r.scores || {};
+    var v = (a._meta && a._meta.violations) || {};
+    var sig = Object.keys(v).filter(function(k){ return v[k]; }).map(function(k){ return k+'×'+v[k]; }).join(' ');
+    var row = [
+      r.student_name, r.student_class,
+      (r.released_at ? '已重置·' : '') + (r.submitted_at ? (r.submit_type === 'timeout' ? '超时交卷' : '已交卷') : '未交卷'),
+      r.submit_type === 'timeout' ? '自动' : r.submit_type === 'manual' ? '手动' : '',
+      fmtDur(r.elapsed_sec), fmtDT(r.started_at), fmtDT(r.submitted_at)
+    ];
+    for (var i=1;i<=9;i++) row.push(sc['q'+i] == null ? '' : sc['q'+i]);
+    row.push(r.total_score == null ? '' : r.total_score, r.reviewer || '', sig);
+    for (var j=1;j<=9;j++) row.push(questionAnswerText(a, j));
+    out.push(row.map(csvCell).join(','));
+  });
+  return '\ufeff' + out.join('\r\n');
+}
+function questionAnswerText(a, no){
+  var parts = [];
+  if (no === 6){
+    for (var n=1;n<=12;n++){
+      var c = a['q6_cmd'+n], d = a['q6_desc'+n];
+      if ((c && String(c).trim()) || (d && String(d).trim())) parts.push(n + '. ' + (c||'') + ' → ' + (d||''));
+    }
+    return parts.join('\n');
+  }
+  var map = {
+    1:['q1a','q1b','q1c','q1d','q1e'],
+    2:['q2a','q2a_r','q2b','q2b_r','q2c','q2c_r','q2d','q2d_r','q2e','q2e_r','q2f','q2f_r'],
+    3:['q3_order','q3_reason'],
+    4:['q4_num','q4_rule'],
+    5:['q5_num','q5_steps'],
+    7:['q7'],
+    8:['q8_r1','q8_r2','q8_mod','q8_why'],
+    9:['q9_1','q9_2','q9_3']
+  }[no] || [];
+  map.forEach(function(k){
+    var val = a[k];
+    if (val == null || String(val) === '') return;
+    if (/^q2[a-f]$/.test(k)) val = JUDGE_LABEL[val] || val;
+    parts.push(k + ': ' + val);
+  });
+  return parts.join('\n');
+}
+function download(name, text){
+  var blob = new Blob([text], { type:'text/csv;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 1000);
+}
+function stamp(){
+  var d = new Date();
+  return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes());
+}
+function exportAllCsv(){
+  if (!SUBMISSIONS.length){ toast('暂无数据'); return; }
+  download('答卷汇总_'+stamp()+'.csv', rowsToCsv(SUBMISSIONS));
+  toast('已导出 '+SUBMISSIONS.length+' 条记录');
+}
+function copyCsv(list){
+  var text = rowsToCsv(list);
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ toast('已复制到剪贴板'); },
+      function(){ toast('复制失败，请改用导出按钮', 4000); });
+  } else { toast('当前浏览器不支持一键复制，请用导出按钮'); }
+}
+
+/* ============================ 自动登录 ============================ */
+if (token){
+  rpc('admin_list', { p_token: token }).then(function(res){
+    showPanel(listOf(res));
+  }).catch(function(){ try { sessionStorage.removeItem(TOKEN_KEY); } catch(e){} });
+}
+setInterval(function(){
+  if (document.getElementById('panel').style.display === 'block'
+      && !document.getElementById('detailMask').classList.contains('show')){
+    rpc('admin_list', { p_token: token }).then(function(res){ render(listOf(res)); }).catch(function(){});
+    refreshWindow(false);
+  }
+}, 60000);
+
+})();
+</script>
+</body>
+</html>
